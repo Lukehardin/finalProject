@@ -1,0 +1,4 @@
+git add your_file.qmd
+git commit -m "Add QMD file"
+git remote add origin <https://github.com/Lukehardin/finalProject>
+git push -u origin master
