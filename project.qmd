@@ -4,7 +4,7 @@ author: "Luke Hardin"
 format: pdf
 ---
 
-```{r}
+```{r, echo = F, warning = F}
 library(tidyverse)
 library(tidymodels)
 library(broom)
@@ -23,7 +23,7 @@ With the increasing threat presented by the climate crisis, weather becomes more
 
 In the Northern Territory of Australia, residents face extreme and unpredictable weather conditions throughout the seasons. The Northern Territory is home to the most cattle farms in Australia, all of which are heavily influenced by weather conditions. These cattle farms are essential in providing food for many Australians, so it is imperative to understand and predict the extremity of weather conditions in this region. 
 
-Within the Northern Territory, there are 3 regions: Tropical/Sub-tropical, Sub-tropical/Semi-arid, Semi-arid/Arid ($$ResearchGate$$). The most northern of these is the Tropical/Sub-tropical, also known as the monsoonal region. This region of the Northern Territory recieves great amounts of rainfall during the wet season. 
+Within the Northern Territory, there are 3 regions: Tropical/Sub-tropical, Sub-tropical/Semi-arid, Semi-arid/Arid *ResearchGate*. The most northern of these is the Tropical/Sub-tropical, also known as the monsoonal region. This region of the Northern Territory recieves great amounts of rainfall during the wet season. 
 
 I want to explore if we can predict, using the data from one specific day and one specific time, that it will rain the following day in the monsoonal region of the Northern Territory.  
 
@@ -43,19 +43,12 @@ rain <- rain |>
 
 ```
 
-rain <- rain |>
-  mutate(WindGustDir = as.factor(WindGustDir))
-```{r}
-
-```
 
 
-
-```{r, echo = F, warning = F}}
+```{r, echo = F, warning = F}
 install.packages("naniar")
 library(naniar)
-vis_miss(rain)
-gg_miss_fct(x = rain, fct = hyp)
+gg_miss_upset(rain)
 
 ```
 I acquired this dataset from Kaggle, a data science competition platform which has thousands of public datasets.
@@ -64,20 +57,31 @@ The range of the measurements spans from July 1, 2009 until June 27, 2017.
 
 The original dataset consists of approximately 10 years of daily weather observations from Australian weather stations. The original dataset has 145,460 observations with 23 variables. Outside of the predictor and response variables, there is a variable for the location of the observation as well as the date of the observation. 
 
-For my response variable, I will be looking at the categorical variable RainTomorrow, which has 2 responses: "Yes" or "No". If the response is "Yes", then it rained at least 1 mm the following day. For the predictors, I will be using both categorical and quantitative variables to examine the question. $$MinTemp$$ is a quantitative predictor which provides a value in degrees Celsius of the minimum temperature on the day of the observation. $$MaxTemp$$ is a quantitative predictor whichmprovides a value in degrees Celsius of the maximum temperature on the day of the observation. $$Rainfall$$ is a quantitative predictor which provides the amount of rainfall in mm on the day of the observation. $$WindDir3pm$$ is a categorical predictor which provides the direction in which the wind is blowing at 3pm on the day of the observation. $$WindSpeed3pm$$ is a quantitative predictor which provides the wind speed in kilometers/hour averaged over the 10 minutes prior to 3pm. $$Pressure3pm$$ is a quantitative predictor that proves the atomspheric pressure (hpa) reduced to mean sea level at 3pm.
+For my response variable, I will be looking at the categorical variable RainTomorrow, which has 2 responses: "Yes" or "No". If the response is "Yes", then it rained at least 1 mm the following day. For the predictors, I will be using both categorical and quantitative variables to examine the question. *MinTemp* is a quantitative predictor which provides a value in degrees Celsius of the minimum temperature on the day of the observation. *MaxTemp* is a quantitative predictor whichmprovides a value in degrees Celsius of the maximum temperature on the day of the observation. *Rainfall* is a quantitative predictor which provides the amount of rainfall in mm on the day of the observation. *WindDir3pm* is a categorical predictor which provides the direction in which the wind is blowing at 3pm on the day of the observation. *WindSpeed3pm* is a quantitative predictor which provides the wind speed in kilometers/hour averaged over the 10 minutes prior to 3pm. *Pressure3pm* is a quantitative predictor that proves the atomspheric pressure (hpa) reduced to mean sea level at 3pm.
 
 After filtering the data in order to only look at observations from Darwin, the dataset I will be working with has 3,193 observations and 23 variables. I also changed the variables RainToday and RainTomorrow to be a binary variable containing values of 0 or 1, rather than a string containing "No" or "Yes". 
 
 ## Methodology
 
 ```{r, echo = F, warning = F}
-m1 <- glm(RainTomorrow ~ RainToday +, 
+m1 <- glm(RainTomorrow ~ MaxTemp + Rainfall + as.factor(WindDir3pm) + WindSpeed3pm, 
           data = rain,
           family = "binomial")
+
+tidy(m1)
 ```
 
 
 ## Results
+```{r, echo = F, warning = F}
+m1_aug |> 
+  roc_curve(
+    truth = as.factor(Legendary),
+    prob, 
+    event_level = "second"
+  ) %>% 
+  autoplot()
+```
 
 
 
