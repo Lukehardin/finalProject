@@ -4,33 +4,19 @@ author: "Luke Hardin"
 format: pdf
 ---
 
-```{r, echo = F, warning = F}
+```{r, echo = F, warning = F, message = F}
 library(tidyverse)
 library(tidymodels)
 library(broom)
 library(dplyr)
 library(Stat2Data)
 library(MASS)
+library(gt)
+
 
 
 rain <- read.csv("weatherAUS.csv")
 
-```
-
-## Introduction
-
-With the increasing threat presented by the climate crisis, weather becomes more unpredictable as time progresses. Understanding the weather can help us 
-
-In the Northern Territory of Australia, residents face extreme and unpredictable weather conditions throughout the seasons. The Northern Territory is home to the most cattle farms in Australia, all of which are heavily influenced by weather conditions. These cattle farms are essential in providing food for many Australians, so it is imperative to understand and predict the extremity of weather conditions in this region. 
-
-Within the Northern Territory, there are 3 regions: Tropical/Sub-tropical, Sub-tropical/Semi-arid, Semi-arid/Arid *ResearchGate*. The most northern of these is the Tropical/Sub-tropical, also known as the monsoonal region. This region of the Northern Territory recieves great amounts of rainfall during the wet season. 
-
-I want to explore if we can predict, using the data from one specific day and one specific time, that it will rain the following day in the monsoonal region of the Northern Territory.  
-
-
-## Data Description
-
-```{r, echo = F, warning = F}
 rain <- rain |>
   filter(Location == "Darwin")
 
@@ -38,51 +24,147 @@ rain <- rain |>
   mutate(RainTomorrow = ifelse(RainTomorrow == "Yes", 1, 0))
 
 rain <- rain |>
-  mutate(RainToday = ifelse(RainToday == "Yes", 1, 0))
+  mutate(RainToday = ifelse(RainToday == "Yes", 1, 0)) 
 
-
-```
-
-
-
-```{r, echo = F, warning = F}
-install.packages("naniar")
-library(naniar)
-gg_miss_upset(rain)
+rain <- na.omit(rain)
 
 ```
-I acquired this dataset from Kaggle, a data science competition platform which has thousands of public datasets.
 
-The range of the measurements spans from July 1, 2009 until June 27, 2017. 
+## Introduction
 
-The original dataset consists of approximately 10 years of daily weather observations from Australian weather stations. The original dataset has 145,460 observations with 23 variables. Outside of the predictor and response variables, there is a variable for the location of the observation as well as the date of the observation. 
+In the Northern Territory of Australia, residents face extreme and unpredictable weather conditions throughout the seasons. The Northern Territory is home to the most cattle farms in Australia, all of which are heavily influenced by weather conditions. These cattle farms are essential in providing food for many Australians, so it is imperative to understand and predict the extremity of weather conditions in this region. With the increasing threat presented by the climate crisis, weather becomes more unpredictable as time progresses. The *United States Environmental Protection Agency* explains that "climate change can affect the intensity and frequency of precipitation." It is necessary that we are able to predict weather trends, especially across lands that contribute to food access for millions of people. 
 
-For my response variable, I will be looking at the categorical variable RainTomorrow, which has 2 responses: "Yes" or "No". If the response is "Yes", then it rained at least 1 mm the following day. For the predictors, I will be using both categorical and quantitative variables to examine the question. *MinTemp* is a quantitative predictor which provides a value in degrees Celsius of the minimum temperature on the day of the observation. *MaxTemp* is a quantitative predictor whichmprovides a value in degrees Celsius of the maximum temperature on the day of the observation. *Rainfall* is a quantitative predictor which provides the amount of rainfall in mm on the day of the observation. *WindDir3pm* is a categorical predictor which provides the direction in which the wind is blowing at 3pm on the day of the observation. *WindSpeed3pm* is a quantitative predictor which provides the wind speed in kilometers/hour averaged over the 10 minutes prior to 3pm. *Pressure3pm* is a quantitative predictor that proves the atomspheric pressure (hpa) reduced to mean sea level at 3pm.
+Within the Northern Territory, there are 3 regions: Tropical/Sub-tropical, Sub-tropical/Semi-arid, Semi-arid/Arid (*ResearchGate*). The most northern of these is the Tropical/Sub-tropical, also known as the monsoonal region. This region of the Northern Territory recieves great amounts of rainfall during the wet season. One city in this region is Darwin, which is home to 148,116 residents in 2024 (*World Population Review*). I want to look at Darwin because it is in the monsoonal region which is known to recieve large amounts of rainfall.
 
-After filtering the data in order to only look at observations from Darwin, the dataset I will be working with has 3,193 observations and 23 variables. I also changed the variables RainToday and RainTomorrow to be a binary variable containing values of 0 or 1, rather than a string containing "No" or "Yes". 
+Through the exploration of this data, I want to see if we can predict whether or not it will rain the following day in Darwin using a variety of predictors. 
+
+## Data Description
+
+I acquired this dataset from Kaggle, a data science competition platform that gives access to thousands of public datasets. Joe Young and Adam Young created this dataset using the Australian Government's online climate data in which observations were drawm from numerous weather stations. The dataset consists of approximately 10 years of daily weather observations from Australian weather stations. The original dataset has 145,460 observations with 23 variables. Outside of the predictor and response variables, there is a variable for the location of the observation as well as the date of the observation. The range of the observations spans from July 1, 2009 until June 27, 2017. For my response variable, I will be looking at the categorical variable *RainTomorrow*, which has 2 responses: "Yes" or "No". If the response is "Yes", then it rained at least 1 mm the following day. For the predictors, I will be using both categorical and quantitative variables to examine the question. Upon looking at the different variables in the dataset, I was the most interested in exploring how the following relate to *RainTomorrow*. *WindGustSpeed* is a continuous predictor which provides the speed of the strongest wind gust in the 24 hours to midnight in kilometers per hour. *Temp3pm* is a contiuous predictor which provides a value in degrees Celsius of the temperature at 3pm on the day of the observation. *Rainfall* is a continuous predictor which provides the amount of rainfall in mm on the day of the observation. *RainToday* is a binary, categorical variable that returns a 1 if precipitation in millimeters in the 24 hours to 9am exceeds 1mm - if not, it returns 0. After filtering the data to only include observations from Darwin, then removing any rows with "NA", or no observations, the dataset I will be working with has 3,062 observations and 23 variables. I also changed the variables *RainToday* and *RainTomorrow* to be a binary variable containing values of 0 or 1, rather than a string "No" or "Yes". 
 
 ## Methodology
 
-```{r, echo = F, warning = F}
-m1 <- glm(RainTomorrow ~ MaxTemp + Rainfall + as.factor(WindDir3pm) + WindSpeed3pm, 
-          data = rain,
-          family = "binomial")
-
-tidy(m1)
-```
-
+I created a logistic regression model using *RainTomorrow* as the binary response variable. Because my response variable only contains two possible outcomes, I created a simple logistic regression rather than an ordinal or multinomial model. I did not create a linear regression because my response variable is categorical, not quantitiative. I wanted a mix of quantitative and categorical variables to use as my predictors. I began to decide which variables to use, and created some criteria for which I would include in my model. Because these data are time-based, I am aware that independence may be violated. In order to further avoid independence violation, I will use one variable of which there were two taken in the same day. For example, I will not use both *WindDir9am* and *WindDir3pm*, *WindSpeed9am* and *WindSpeed3pm*, etc. However, I will use *Temp3pm*, but I will not use *Temp9am*. I also decided to include an interaction term between *RainToday* and *Rainfall*. If there was no amount of rain on a given day, then both *Rainfall* and *RainToday* would be assigned a value of 0. If there was more than 1mm of rain on a given day, then *RainToday* would return 1 and *Rainfall* would be greater than 0. I felt that an interaction term was necessary due to these conditions, and after running the regression, the interaction term returned a p-value of less than 0.05. After all of this, I was sure that the interaction term would be necessary to include in the model.
 
 ## Results
-```{r, echo = F, warning = F}
-m1_aug |> 
-  roc_curve(
-    truth = as.factor(Legendary),
-    prob, 
-    event_level = "second"
-  ) %>% 
-  autoplot()
+
+
+```{r, echo = F, warning = F, message = F}
+mod <- glm(RainTomorrow ~ WindGustSpeed + Temp3pm + RainToday * Rainfall + RainToday + Rainfall,
+           data = rain,
+           family = "binomial")
 ```
 
 
 
+```{r, echo = F, warning = F, message = F}
+summary_table <- summary(mod)
+
+# Extract coefficients, odds ratios, and probabilities
+coef <- summary_table$coefficients[, 1]
+std_err <- summary_table$coefficients[, 2]
+odds_ratios <- exp(coef)
+probabilities <- odds_ratios / (1 + odds_ratios)
+
+# Extract variable names including the intercept
+variable_names <- names(mod$coefficients)
+
+# Ensure all extracted data have the same length
+num_vars <- length(variable_names)
+num_coefs <- length(coef)
+num_std_err <- length(std_err)
+num_odds_ratios <- length(odds_ratios)
+num_probs <- length(probabilities)
+
+# Check if the lengths match
+if (num_vars == num_coefs && num_coefs == num_std_err && 
+    num_std_err == num_odds_ratios && num_odds_ratios == num_probs) {
+  
+  # Create a data frame for the table
+  table <- data.frame(
+    Variable = variable_names,
+    Coefficient = coef,
+    `Standard Error` = std_err,
+    `Odds Ratio` = odds_ratios,
+    Probability = probabilities
+  )
+  
+  # Create a visually appealing table using gt
+  table %>%
+    gt() %>%
+    tab_header(
+      title = "Logistic Regression Coefficients",
+      subtitle = "Summary of coefficients, standard errors, odds ratios, and probabilities"
+    ) %>%
+    fmt_number(
+      columns = where(is.numeric),
+      decimals = 3
+    )
+  
+} else {
+  print("Error: Lengths of extracted data do not match.")
+}
+
+```
+
+Holding *Temp3pm*, *RainToday*, *Rainfall*, and the interaction term between *Rainfall* and *RainToday* constant, when we increase *WindGustSpeed* by 1 km/hr, the odds of there being rain the next day is predicted to be multiplied by approximately 1.065. 
+
+Holding *WindGustSpeed*, *RainToday*, *Rainfall*, and the interaction term between *Rainfall* and *RainToday* constant, when we increase *Temp3pm* by 1 degree Celsius, the odds of there being rain the next day is predicted to be multiplied by approximately 0.7798.
+
+Also, there is sufficient evidence to suggest that the relationship between *RainToday* and *RainTomorrow* is dependent on *Rainfall*, and that the relationship between *Rainfall* and *RainTomorrow* is dependent on *RainToday* since the p-value of the interaction term is less than 0.05. 
+
+
+```{r, echo = F, warning = F}
+emplogitplot1(RainTomorrow ~ Temp3pm, 
+              data = rain, 
+              ngroups = 20, 
+              xlab = "Temperature at 3pm in Celsius", 
+              ylab = "Pred. log-odds", 
+              main = "Linearity met for Temp3pm")
+
+emplogitplot1(RainTomorrow ~ WindGustSpeed,
+              data = rain,
+              ngroups = 10,
+              xlab = "Wind Gust Speed (km/hr)",
+              ylab = "Pred. log-odds",
+              main = "Linearity met for WindGustSpeed")
+
+emplogitplot1(RainTomorrow ~ Rainfall,
+              data = rain,
+              ngroups = 2,
+              xlab = "Rainfall(mm)",
+              ylab = "Pred. log-odds",
+              main = "Linearity met for Rainfall")
+```
+For each of these continuous predictors, linearity seems to be satisfied for this model. This means that there is a linear relationship between the log-odds of *RainTomorrow* and each of these continuous predictors.
+
+
+```{r, echo = F, warning = F}
+aug_mod <- augment(mod)
+
+aug_mod |>
+  mutate(RainTomorrow = as.factor(RainTomorrow)) |>
+  roc_curve(
+    truth = RainTomorrow,
+    .fitted, 
+    event_level = "second"
+  ) |>
+  autoplot()
+
+```
+
+```{r, echo = F, warning = F}
+aug_mod |>
+  mutate(RainTomorrow = as.factor(RainTomorrow)) |>
+  roc_auc(
+    truth = RainTomorrow,
+    .fitted, 
+    event_level = "second"
+  ) 
+
+```
+The area under the curve, or AUC, is used to assess how well we are predicting and summarizes the ROC curve. The AUC of this model is approximately 0.813. 
+
 ## Discussion
+
+From this exploration of data and the fitting of the model, we can see that it is possible to predict whether there will be rain the following day in the city of Darwin in the Northern Territory of Australia. With further research, we would be able to consider more predictors that may be used to predict future precipitation. I would, in the future, like to use the wind direction predictor and compare observations from different locations in Australia to predict precipitation. I have learned that we can use temperature at 3pm, wind gust speed, and rainfall amount in a day to predict if it will rain the next day. 
