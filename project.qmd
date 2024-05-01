@@ -25,8 +25,7 @@ In the Northern Territory of Australia, residents face extreme and unpredictable
 
 Within the Northern Territory, there are 3 regions: Tropical/Sub-tropical, Sub-tropical/Semi-arid, Semi-arid/Arid ($$ResearchGate$$). The most northern of these is the Tropical/Sub-tropical, also known as the monsoonal region. This region of the Northern Territory recieves great amounts of rainfall during the wet season. 
 
-I want to explore if we can predict, using the data from one specific day and one specific time, that it will rain the next day in the monsoonal region of the Northern Territory.  
-
+I want to explore if we can predict, using the data from one specific day and one specific time, that it will rain the following day in the monsoonal region of the Northern Territory.  
 
 
 ## Data Description
