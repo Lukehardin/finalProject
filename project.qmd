@@ -1,5 +1,5 @@
 ---
-title: "Project"
+title: "Predicting Future Rainfall in Australia's Monsoon Region"
 author: "Luke Hardin"
 format: pdf
 ---
@@ -12,36 +12,74 @@ library(dplyr)
 library(Stat2Data)
 library(MASS)
 
-esg <- read.csv("SP 500 ESG Risk Ratings.csv")
+
+rain <- read.csv("weatherAUS.csv")
 
 ```
 
 ## Introduction
 
-One of the largest problems we as a country - and as a world - are currently facing is the climate crisis. As global temperatures continue to rise and the government sometimes tries to fight against the emission of greenhouse gases, this crisis becomes both an environmental and societal problem. Leading contributors to this environmental problem are mainly comprised of large corporations both within and outside of the United States. As environmental risks worsen day by day, it is important to address those who contribute heavily to this problem. In this study, we will examine corporations and companies belonging to the S&P 500 Index. Also known as the Standard and Poor's 500 Index, the index is market-capitalization-weighted index of 500 leading publicly traded companies in the United States (Investopedia). The S&P 500 index is regarded as one of the best gauges of prominent American equities' performance.
+With the increasing threat presented by the climate crisis, weather becomes more unpredictable as time progresses. Understanding the weather can help us 
 
-The purpose of this data exploration is to determine if we can predict the size of a company by the environmental or sustainability scores of the company. 
+In the Northern Territory of Australia, residents face extreme and unpredictable weather conditions throughout the seasons. The Northern Territory is home to the most cattle farms in Australia, all of which are heavily influenced by weather conditions. These cattle farms are essential in providing food for many Australians, so it is imperative to understand and predict the extremity of weather conditions in this region. 
+
+Within the Northern Territory, there are 3 regions: Tropical/Sub-tropical, Sub-tropical/Semi-arid, Semi-arid/Arid ($$ResearchGate$$). The most northern of these is the Tropical/Sub-tropical, also known as the monsoonal region. This region of the Northern Territory recieves great amounts of rainfall during the wet season. 
+
+I want to explore if we can predict, using the data from one specific day and one specific time, that it will rain the next day in the monsoonal region of the Northern Territory.  
+
+
 
 ## Data Description
 
-This dataset shows
+```{r, echo = F, warning = F}
+rain <- rain |>
+  filter(Location == "Darwin")
+
+rain <- rain |>
+  mutate(RainTomorrow = ifelse(RainTomorrow == "Yes", 1, 0))
+
+rain <- rain |>
+  mutate(RainToday = ifelse(RainToday == "Yes", 1, 0))
+
+
+```
+
+rain <- rain |>
+  mutate(WindGustDir = as.factor(WindGustDir))
+```{r}
+
+```
+
+
+
+```{r, echo = F, warning = F}}
+install.packages("naniar")
+library(naniar)
+vis_miss(rain)
+gg_miss_fct(x = rain, fct = hyp)
+
+```
+I acquired this dataset from Kaggle, a data science competition platform which has thousands of public datasets.
+
+The range of the measurements spans from July 1, 2009 until June 27, 2017. 
+
+The original dataset consists of approximately 10 years of daily weather observations from Australian weather stations. The original dataset has 145,460 observations with 23 variables. Outside of the predictor and response variables, there is a variable for the location of the observation as well as the date of the observation. 
+
+For my response variable, I will be looking at the categorical variable RainTomorrow, which has 2 responses: "Yes" or "No". If the response is "Yes", then it rained at least 1 mm the following day. For the predictors, I will be using both categorical and quantitative variables to examine the question. $$MinTemp$$ is a quantitative predictor which provides a value in degrees Celsius of the minimum temperature on the day of the observation. $$MaxTemp$$ is a quantitative predictor whichmprovides a value in degrees Celsius of the maximum temperature on the day of the observation. $$Rainfall$$ is a quantitative predictor which provides the amount of rainfall in mm on the day of the observation. $$WindDir3pm$$ is a categorical predictor which provides the direction in which the wind is blowing at 3pm on the day of the observation. $$WindSpeed3pm$$ is a quantitative predictor which provides the wind speed in kilometers/hour averaged over the 10 minutes prior to 3pm. $$Pressure3pm$$ is a quantitative predictor that proves the atomspheric pressure (hpa) reduced to mean sea level at 3pm.
+
+After filtering the data in order to only look at observations from Darwin, the dataset I will be working with has 3,193 observations and 23 variables. I also changed the variables RainToday and RainTomorrow to be a binary variable containing values of 0 or 1, rather than a string containing "No" or "Yes". 
 
 ## Methodology
 
-```{r}
-install.packages("naniar")
-library(naniar)
-vis_miss(esg)
-gg_miss_fct(x = esg, fct = hyp)
-
-
+```{r, echo = F, warning = F}
+m1 <- glm(RainTomorrow ~ RainToday +, 
+          data = rain,
+          family = "binomial")
 ```
 
-```{r}
-head(esg)
-
-```
 
 ## Results
+
+
 
 ## Discussion
